@@ -1,7 +1,11 @@
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from core.entites.core_entities import Project
-from core.entites.core_events import ProjectCreatedEvent, ProjectDeletedEvent
+from core.entites.core_events import (
+    ProjectCreatedEvent,
+    ProjectDeletedEvent,
+    ProjectUpdatedEvent,
+)
 from core.interfaceRepositories.project_irepository import IProjectRepository
 from core.interfaceRepositories.event_ipublisher import IEventPublisher
 from core.exceptions import NotFoundError, AlreadyExistsError, DuplicateEntryError
@@ -58,7 +62,10 @@ class ProjectService:
         :return: Объект Project или None, если не найден.
         """
 
-        return await self._project_repo.get_project(project_id)
+        project = await self._project_repo.get_project(project_id)
+        if not project:
+            raise NotFoundError(f"Project with ID {project_id} not found.")
+        return project
 
     async def list_projects(
         self, limit: Optional[int] = None, offset: Optional[int] = None
@@ -83,15 +90,33 @@ class ProjectService:
         :param update_data: Словарь с данными для обновления (например, {"name": "New Name"}).
         :return: Обновленный объект Project или None, если проект не найден.
         """
-        # TODO: Добавить логику валидации update_data
-
         # Опционально: можно получить текущее состояние, если нужно сравнить или применить сложную логику
         # current_project = await self._project_repo.get_project(project_id)
         # if not current_project:
         #     return None
         # TODO: Если нужно публиковать ProjectUpdatedEvent, создать его здесь
+        if update_data.get("id") is not None:
+            raise DuplicateEntryError("ID cannot be updated.")
+        if update_data.get("name") is not None:
+            existing_project = await self._project_repo.get_project_by_filter(
+                filters={"name": update_data["name"]}
+            )
+            if existing_project and existing_project.id != project_id:
+                raise AlreadyExistsError(
+                    f"Project with name '{update_data['name']}' already exists."
+                )
 
-        return await self._project_repo.update_project(project_id, update_data)
+        updated_project = await self._project_repo.update_project(
+            project_id, update_data
+        )
+
+        event = ProjectUpdatedEvent(
+            project_id=updated_project.id,
+            name=updated_project.name,
+        )
+        await self._event_publisher.publish_event(event, topic="task_events")
+
+        return updated_project
 
     async def delete_project(self, project_id: UUID) -> None:
         """
@@ -100,6 +125,9 @@ class ProjectService:
         :param project_id: ID проекта.
         """
         # TODO: Возможно, добавить проверку, что нет связанных задач
+        project = await self._project_repo.get_project(project_id)
+        if not project:
+            raise NotFoundError(f"Project with ID {project_id} not found.")
 
         await self._project_repo.delete_project(project_id)
 
