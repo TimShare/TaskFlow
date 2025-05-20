@@ -1,15 +1,15 @@
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from src.core.entites.core_entities import Task, TaskStatus
-from src.core.entites.core_events import (
+from core.entites.core_entities import Task, TaskStatus
+from core.entites.core_events import (
     TaskCreatedEvent,
     TaskStatusChangedEvent,
     TaskDeletedEvent,
 )
-from src.core.interfaceRepositories.task_irepository import ITaskRepository
+from core.interfaceRepositories.task_irepository import ITaskRepository
 
-from src.core.interfaceRepositories import IProjectRepository
-from src.core.interfaceRepositories.event_ipublisher import IEventPublisher
+from core.interfaceRepositories import IProjectRepository
+from core.interfaceRepositories.event_ipublisher import IEventPublisher
 from datetime import datetime
 
 
@@ -60,7 +60,7 @@ class TaskService:
         task = await self._task_repo.create_task(new_task_data)
 
         event = TaskCreatedEvent(
-            task_id=task.uuid,
+            task_id=task.id,
             project_id=task.project_id,
             title=task.title,
             status=task.status,
