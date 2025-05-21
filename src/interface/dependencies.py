@@ -7,6 +7,11 @@ from infrastructure.event_publisher_singleton import event_publisher
 
 from infrastructure.repositories.task_repository import TaskRepository
 from core.services.task_service import TaskService
+from infrastructure.repositories.auth_repository import (
+    UserRepository,
+    RefreshTokenRepository,
+)
+from core.services.auth_service import AuthService
 
 
 async def get_project_service(
@@ -25,3 +30,12 @@ async def get_task_service(
     task_repo = TaskRepository(session)
     project_repo = ProjectRepository(session)
     return TaskService(task_repo, project_repo, event_publisher)
+
+
+async def get_auth_service(
+    session: AsyncSession = Depends(database.get_db_session),
+) -> AuthService:
+    """Создает AuthService с репозиториями пользователя и refresh-токена"""
+    user_repo = UserRepository(session)
+    refresh_repo = RefreshTokenRepository(session)
+    return AuthService(user_repo, refresh_repo)

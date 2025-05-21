@@ -56,3 +56,15 @@ class DatabaseError(Exception):
     """Ошибка базы данных."""
 
     pass
+
+
+class AuthenticationError(Exception):
+    """Ошибка аутентификации."""
+
+    pass
+
+
+class PermissionError(Exception):
+    """Ошибка разрешения."""
+
+    pass

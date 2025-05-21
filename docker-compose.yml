@@ -63,7 +63,9 @@ services:
 
   task_service:
     image: task_service:latest
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     command: /bin/sh -c "cd src/  && alembic upgrade head && uvicorn interface.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - .:/app
