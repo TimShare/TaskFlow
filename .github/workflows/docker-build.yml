@@ -1,0 +1,27 @@
+name: Build and Test Docker
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images
+        run: |
+          docker compose build
+
+      # Если нужно прогнать тесты внутри контейнера, раскомментируйте:
+      # - name: Run tests
+      #   run: |
+      #     docker compose up -d
+      #     # Здесь ваши команды для тестов
+      #     docker compose down
