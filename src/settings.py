@@ -24,6 +24,13 @@ class Settings(BaseSettings):
 
     kafka_servers: str = Field(os.environ.get("KAFKA_SERVERS"))
 
+    algorithm: str = Field(os.environ.get("ALGORITHM"))
+    secret_key: str = Field(os.environ.get("SECRET_KEY"))
+    access_token_expire_minutes: int = Field(
+        os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+    )
+    refresh_token_expire_days: int = Field(os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS"))
+
     @property
     def database_url(self) -> Optional[PostgresDsn]:
         return (

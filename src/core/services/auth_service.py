@@ -63,12 +63,11 @@ class AuthService:
             raise ValueError(
                 "Password hash must be provided when creating a user entity"
             )
-
+        user_data.password_hash = self._pwd_context.hash(user_data.password_hash)
         if await self._user_repo.get_by_email(email=user_data.email):
             raise DuplicateEntryError(
                 f"User with email '{user_data.email}' already exists"
             )
-
         created_user = await self._user_repo.create_user(user_data)
         return created_user
 
