@@ -142,7 +142,6 @@ class AuthService:
             user = await self.get_user_by_email(email)
         except NotFoundError:
             raise AuthenticationError("Invalid email or password")
-
         if not self._pwd_context.verify(password, user.password_hash):
             raise AuthenticationError("Invalid email or password")
 
@@ -326,6 +325,7 @@ class AuthService:
         """
         to_encode = claims.copy()
         expire_at = datetime.now(timezone.utc) + expires_delta
+
 
         encoded_jwt = jwt.encode(
             to_encode, self._jwt_secret_key, algorithm=self._jwt_algorithm

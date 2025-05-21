@@ -19,11 +19,11 @@ async def signup(
     auth_service: AuthService = Depends(get_auth_service),
 ) -> UserRead:
     try:
-        hashed = auth_service._pwd_context.hash(user_data.password)
         user_entity = UserEntity(
             username=user_data.username,
             email=user_data.email,
-            password_hash=hashed,
+            password_hash=user_data.password,
+            is_active=True,
         )
         created = await auth_service.create_user(user_entity)
         return created
@@ -42,6 +42,15 @@ async def login(
 ) -> TokenPair:
     try:
         tokens = await auth_service.login(login_data.email, login_data.password)
+        response.set_cookie(
+            key="access_token",
+            value=tokens.access_token.token,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            expires=int(tokens.access_token.expires_at.timestamp()),
+        )
+        print(tokens.access_token.expires_at.timestamp())
         response.set_cookie(
             key="refresh_token",
             value=tokens.refresh_token.token,
